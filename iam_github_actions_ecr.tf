@@ -1,6 +1,6 @@
 # Extends git-actions-mlb-engine (the existing least-privilege IAM user
 # used by both workflows) with permission to push to the new ECR repo.
-# Its role narrows going forward: build image → push to ECR only. It no
+# Its role narrows going forward: build image -> push to ECR only. It no
 # longer needs (and after this change, should no longer have) any
 # RDS/Secrets Manager access, since ECS tasks — not Actions — will be
 # the ones talking to RDS.
@@ -34,6 +34,20 @@ data "aws_iam_policy_document" "github_actions_ecr_push" {
       "ecr:CompleteLayerUpload",
     ]
     resources = [aws_ecr_repository.mlb_engine_jobs.arn]
+  }
+
+  # Added Weekend 6 — the standing mlb-engine-app ECS service doesn't
+  # pick up a freshly-pushed :latest image on its own (unlike the batch
+  # jobs, which pull fresh on every scheduled run). This lets the
+  # workflow trigger a redeploy right after a successful image push,
+  # closing the "pushed but not actually live" gap that required a
+  # manual `aws ecs update-service --force-new-deployment` today.
+  # Scoped to exactly one service — this identity still can't touch
+  # any other ECS service, task definition, or cluster-level action.
+  statement {
+    sid       = "RedeployAppService"
+    actions   = ["ecs:UpdateService"]
+    resources = [aws_ecs_service.app.id]
   }
 }
 
