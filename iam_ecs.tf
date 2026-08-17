@@ -41,7 +41,7 @@ data "aws_iam_policy_document" "mlb_engine_ecs_task_permissions" {
     sid       = "RDSSecretRead"
     actions   = ["secretsmanager:GetSecretValue"]
     resources = [
-      "arn:aws:secretsmanager:us-east-1:687050094462:secret:rds!db-e3e1711b-71a6-4339-9ebb-79ace00465a4-hT3Uzj",
+      aws_db_instance.main.master_user_secret[0].secret_arn,
     ]
   }
 }

@@ -16,7 +16,7 @@ locals {
   # endpoint/region changes a Terraform-only change, no code touch needed.
   common_environment = [
     { name = "AWS_DEFAULT_REGION", value = "us-east-1" },
-    { name = "RDS_SECRET_ARN", value = "arn:aws:secretsmanager:us-east-1:687050094462:secret:rds!db-e3e1711b-71a6-4339-9ebb-79ace00465a4-hT3Uzj" },
+    { name = "RDS_SECRET_ARN", value = aws_db_instance.main.master_user_secret[0].secret_arn },
     { name = "RDS_ENDPOINT", value = "mlb-engine-db.cyzm64iqm3q4.us-east-1.rds.amazonaws.com" },
     { name = "RDS_PORT", value = "5432" },
     { name = "RDS_DB_NAME", value = "mlb_engine" },
