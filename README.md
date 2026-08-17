@@ -1,43 +1,40 @@
-﻿# MLB Engine AWS Infrastructure
+﻿# MLB Market Engine — AWS Infrastructure
 
-Terraform-managed AWS infrastructure for the MLB prediction engine -
-migrated from Streamlit Cloud + Supabase + GitHub Actions to a fully
-self-hosted AWS stack.
+Terraform-managed AWS infrastructure for a Monte Carlo MLB prediction and
+outcome-tracking system. Originally built on Streamlit Cloud + Supabase;
+migrated to a fully self-managed AWS stack.
 
-## Purpose
+**Live app:** https://app.diamondmetrics.dev
 
-This repo is a real, in-production infrastructure build and a data
-architecture / data analysis portfolio piece. It started alongside AWS
-SAA-C03 certification study; that certification track has since been
-dropped, but the migration itself continued in full. App code lives in
-the separate mlb-market-engine repo (https://github.com/W-Riley-01/mlb-market-engine)
-- this repo is Terraform source only.
+## What this repo contains
 
-## Live architecture
+Infrastructure-as-code only. Application code, the simulation engine, and
+CI workflows live in the companion repo,
+[`mlb-market-engine`](https://github.com/W-Riley-01/mlb-market-engine).
 
-| Component | Service |
-|---|---|
-| Database | RDS PostgreSQL 17.9, private subnets, Secrets Manager-managed master credentials |
-| Data storage | S3 (parquet files) |
-| Scheduled batch jobs | ECS Fargate, triggered by EventBridge Scheduler (5x daily predictions, 2x daily outcome resolution) |
-| Standing web app | ECS Fargate service (Streamlit) behind an Application Load Balancer |
-| TLS / domain | ACM certificate + Route 53 (diamondmetrics.dev), DNS-validated |
-| Container registry | ECR |
-| CI/CD | GitHub Actions - builds/pushes image, auto-redeploys the app service on push |
-| Local DB access | EC2 bastion (SSM Session Manager only - no inbound rules, no public IP, no SSH); standing infrastructure kept intentionally for DBeaver/SQL admin work |
+## Architecture
 
-Scheduled jobs and the standing app service share one ECR image,
-dispatched via entrypoint.sh based on the command passed in each ECS
-task definition.
+- **VPC** — 2 AZs, public + private subnets, NAT gateway for private egress
+- **RDS PostgreSQL 17.9** — private subnet only, AWS-managed master credentials
+  (password never touches application code or Terraform state)
+- **ECS Fargate (scheduled)** — three containerized batch jobs (prediction
+  logging, outcome recording) triggered by EventBridge Scheduler
+- **ECS Fargate (standing service)** — the Streamlit app, behind an
+  Application Load Balancer
+- **Secrets Manager** — RDS credentials, fetched live at container start
+- **EC2 bastion (SSM Session Manager only)** — zero inbound rules; used for
+  local DB administration via port-forwarded tunnel
+- **Route 53 + ACM** — custom domain, DNS-validated TLS
+- **GitHub Actions → ECR** — builds and pushes the application image,
+  automatically forces a new ECS deployment on push
 
 ## Status
 
-All of the above is live and serving real predictions at
-https://app.diamondmetrics.dev. Originally planned to use Lambda +
-EventBridge for scheduled jobs - that was superseded during the build
-by ECS Fargate + EventBridge Scheduler for all compute, scheduled and
-standing alike, since it let both share one container image and IAM
-role setup rather than maintaining a separate Lambda packaging path.
+Live and stable. Scheduled batch jobs and the standing web service have
+both been verified running unattended via real scheduled triggers, not
+just manual test runs.
 
-See DECISIONS.md for architecture tradeoffs and the app repo's
-README.md for current backlog and session history.
+## State management
+
+Remote state in S3, with a DynamoDB lock table to prevent concurrent
+`apply` conflicts.
