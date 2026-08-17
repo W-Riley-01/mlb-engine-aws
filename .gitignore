@@ -58,3 +58,5 @@ ssm-params.json
 # Large / transient files that don't belong in git history
 *.dump
 logs.txt
+
+plan-detail.txt
