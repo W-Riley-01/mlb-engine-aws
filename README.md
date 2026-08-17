@@ -13,7 +13,7 @@ CI workflows live in the companion repo,
 [`mlb-market-engine`](https://github.com/W-Riley-01/mlb-market-engine).
 
 ## Architecture
-
+![Architecture diagram](./architecture-diagram.svg)
 - **VPC** — 2 AZs, public + private subnets, NAT gateway for private egress
 - **RDS PostgreSQL 17.9** — private subnet only, AWS-managed master credentials
   (password never touches application code or Terraform state)

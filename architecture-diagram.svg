@@ -1,0 +1,137 @@
+<svg viewBox="0 0 1200 820" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a5568"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="820" fill="#ffffff"/>
+
+  <text x="600" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#1a202c">MLB Market Engine — AWS Architecture</text>
+  <text x="600" y="60" text-anchor="middle" font-size="13" fill="#718096">Self-managed AWS stack — VPC, RDS, ECS Fargate, EventBridge Scheduler</text>
+
+  <!-- External data sources -->
+  <rect x="40" y="110" width="190" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="135" y="134" text-anchor="middle" font-size="13" font-weight="600" fill="#92400e">MLB Stats API</text>
+  <text x="135" y="152" text-anchor="middle" font-size="10" fill="#92400e">schedule · rosters · outcomes</text>
+
+  <rect x="40" y="190" width="190" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="135" y="214" text-anchor="middle" font-size="13" font-weight="600" fill="#92400e">Open-Meteo</text>
+  <text x="135" y="232" text-anchor="middle" font-size="10" fill="#92400e">weather / park conditions</text>
+
+  <!-- EventBridge Scheduler -->
+  <rect x="300" y="110" width="200" height="60" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="400" y="134" text-anchor="middle" font-size="13" font-weight="600" fill="#3730a3">EventBridge Scheduler</text>
+  <text x="400" y="152" text-anchor="middle" font-size="10" fill="#3730a3">5x/day predict · 2x/day outcomes</text>
+
+  <!-- Browser -->
+  <rect x="980" y="110" width="180" height="60" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="1070" y="134" text-anchor="middle" font-size="13" font-weight="600" fill="#9d174d">Browser</text>
+  <text x="1070" y="152" text-anchor="middle" font-size="10" fill="#9d174d">app.diamondmetrics.dev</text>
+
+  <!-- VPC boundary -->
+  <rect x="280" y="200" width="880" height="520" rx="10" fill="none" stroke="#a0aec0" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="296" y="222" font-size="12" font-weight="700" fill="#4a5568">VPC — mlb-engine-vpc (2 Availability Zones)</text>
+
+  <!-- Public subnet -->
+  <rect x="300" y="240" width="480" height="110" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="316" y="260" font-size="11" font-weight="700" fill="#1e40af">PUBLIC SUBNETS</text>
+
+  <rect x="320" y="272" width="150" height="60" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="395" y="296" text-anchor="middle" font-size="12" font-weight="600" fill="#1e3a8a">ALB</text>
+  <text x="395" y="312" text-anchor="middle" font-size="10" fill="#1e3a8a">80 / 443 · Route 53 + ACM</text>
+
+  <rect x="600" y="272" width="160" height="60" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="680" y="296" text-anchor="middle" font-size="12" font-weight="600" fill="#1e3a8a">NAT Gateway</text>
+  <text x="680" y="312" text-anchor="middle" font-size="10" fill="#1e3a8a">outbound egress only</text>
+
+  <!-- Private subnet -->
+  <rect x="300" y="370" width="840" height="290" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="316" y="390" font-size="11" font-weight="700" fill="#14532d">PRIVATE SUBNETS</text>
+
+  <!-- ECS scheduled batch jobs -->
+  <rect x="320" y="404" width="230" height="110" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="435" y="426" text-anchor="middle" font-size="12" font-weight="600" fill="#14532d">ECS Fargate</text>
+  <text x="435" y="442" text-anchor="middle" font-size="11" fill="#14532d">Scheduled batch tasks</text>
+  <text x="435" y="460" text-anchor="middle" font-size="10" fill="#166534">auto_log_predictions</text>
+  <text x="435" y="474" text-anchor="middle" font-size="10" fill="#166534">record_outcomes ×2</text>
+  <text x="435" y="492" text-anchor="middle" font-size="10" fill="#166534" font-style="italic">triggered by EventBridge</text>
+
+  <!-- ECS standing service -->
+  <rect x="580" y="404" width="230" height="110" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="695" y="426" text-anchor="middle" font-size="12" font-weight="600" fill="#14532d">ECS Fargate</text>
+  <text x="695" y="442" text-anchor="middle" font-size="11" fill="#14532d">Standing service</text>
+  <text x="695" y="460" text-anchor="middle" font-size="10" fill="#166534">Streamlit app</text>
+  <text x="695" y="474" text-anchor="middle" font-size="10" fill="#166534">@st.cache_resource conn</text>
+  <text x="695" y="492" text-anchor="middle" font-size="10" fill="#166534" font-style="italic">behind the ALB</text>
+
+  <!-- Secrets Manager -->
+  <rect x="850" y="404" width="260" height="60" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="980" y="428" text-anchor="middle" font-size="12" font-weight="600" fill="#991b1b">Secrets Manager</text>
+  <text x="980" y="444" text-anchor="middle" font-size="10" fill="#991b1b">RDS master credentials</text>
+
+  <!-- Bastion -->
+  <rect x="850" y="480" width="260" height="60" rx="6" fill="#f3f4f6" stroke="#4b5563" stroke-width="1.2"/>
+  <text x="980" y="504" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937">EC2 Bastion</text>
+  <text x="980" y="520" text-anchor="middle" font-size="10" fill="#1f2937">SSM Session Manager only · zero inbound rules</text>
+
+  <!-- RDS -->
+  <rect x="480" y="580" width="280" height="70" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="620" y="602" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">RDS PostgreSQL 17.9</text>
+  <text x="620" y="618" text-anchor="middle" font-size="10" fill="#3730a3">game/player_predictions · game/player_outcomes</text>
+  <text x="620" y="634" text-anchor="middle" font-size="10" fill="#3730a3">private subnet only</text>
+
+  <!-- GitHub Actions / ECR -->
+  <rect x="40" y="580" width="200" height="100" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="140" y="604" text-anchor="middle" font-size="12" font-weight="600" fill="#5b21b6">GitHub Actions</text>
+  <text x="140" y="622" text-anchor="middle" font-size="10" fill="#5b21b6">build image → push to ECR</text>
+  <text x="140" y="638" text-anchor="middle" font-size="10" fill="#5b21b6">→ force-new-deployment</text>
+  <text x="140" y="656" text-anchor="middle" font-size="10" fill="#5b21b6" font-style="italic">on every push to main</text>
+
+  <!-- ================= ARROWS ================= -->
+
+  <!-- data sources -> batch job (orthogonal) -->
+  <path d="M230,140 L280,140 L280,459 L318,459" fill="none" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M230,220 L255,220 L255,469 L318,469" fill="none" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- EventBridge -> batch job (trigger) — routed left, around the public subnet box -->
+  <path d="M400,170 L400,186 L262,186 L262,432 L318,432" fill="none" stroke="#4f46e5" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="270" y="180" font-size="9" fill="#4f46e5" font-style="italic">triggers</text>
+
+  <!-- batch job -> RDS -->
+  <path d="M460,514 L460,580" fill="none" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- standing service -> RDS -->
+  <path d="M680,514 L680,580" fill="none" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- batch job -> Secrets Manager (exits below all box text) -->
+  <path d="M550,498 L830,498 L830,424 L850,424" fill="none" stroke="#dc2626" stroke-width="1.3" marker-end="url(#arrow)"/>
+
+  <!-- standing service -> Secrets Manager -->
+  <path d="M810,505 L850,436" fill="none" stroke="#dc2626" stroke-width="1.3" marker-end="url(#arrow)"/>
+
+  <!-- bastion -> RDS (admin, dashed) -->
+  <path d="M850,510 L760,600" fill="none" stroke="#4b5563" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <!-- ALB -> standing service -->
+  <path d="M470,332 L580,440" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Browser -> ALB -->
+  <path d="M980,140 L470,140 L470,270" fill="none" stroke="#db2777" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- GitHub Actions -> ECS standing service (deploy, dashed purple) -->
+  <path d="M140,578 L140,555 L695,555 L695,516" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowPurple)"/>
+
+  <!-- Legend -->
+  <rect x="40" y="740" width="14" height="14" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="60" y="751" font-size="11" fill="#374151">Private subnet (no public IP)</text>
+  <rect x="270" y="740" width="14" height="14" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="290" y="751" font-size="11" fill="#374151">Public subnet</text>
+  <line x1="420" y1="747" x2="450" y2="747" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="456" y="751" font-size="11" fill="#374151">CI/CD deploy path</text>
+  <line x1="620" y1="747" x2="650" y2="747" stroke="#4b5563" stroke-width="1.3" stroke-dasharray="4,3"/>
+  <text x="656" y="751" font-size="11" fill="#374151">Admin access path</text>
+</svg>
